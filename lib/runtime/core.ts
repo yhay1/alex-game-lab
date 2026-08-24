@@ -1,4 +1,4 @@
-import type { AssetLoader, RuntimeInput, RuntimeProject, RuntimeScene, RuntimeState, Vec2 } from './types'
+import type { AssetLoader, CameraConfig, RuntimeInput, RuntimeProject, RuntimeScene, RuntimeState, Vec2 } from './types'
 import { CanvasRenderer } from './renderer'
 import { updatePlayer } from './player'
 import { simulatePhysics } from './physics'
@@ -9,7 +9,9 @@ export class Camera {
   y = 0
   zoom = 1
   constructor(public width: number, public height: number) {}
-  follow(target: Vec2) { this.x = target.x - this.width / 2 / this.zoom; this.y = target.y - this.height / 2 / this.zoom }
+  follow(target: Vec2, config: CameraConfig = {}) { if (config.mode === 'fixed') return; const desiredX = target.x - this.width / 2 / this.zoom; const desiredY = target.y - this.height / 2 / this.zoom; const smoothing = Math.min(Math.max(config.smoothing ?? 1, 0.01), 1); this.x += (desiredX - this.x) * smoothing; this.y += (desiredY - this.y) * smoothing; this.clamp(config.bounds) }
+  setFixed(position: Vec2, bounds?: CameraConfig['bounds']) { this.x = position.x; this.y = position.y; this.clamp(bounds) }
+  private clamp(bounds?: CameraConfig['bounds']) { if (!bounds) return; this.x = Math.min(Math.max(this.x, bounds.x), Math.max(bounds.x, bounds.x + bounds.width - this.width / this.zoom)); this.y = Math.min(Math.max(this.y, bounds.y), Math.max(bounds.y, bounds.y + bounds.height - this.height / this.zoom)) }
   worldToScreen(point: Vec2) { return { x: (point.x - this.x) * this.zoom, y: (point.y - this.y) * this.zoom } }
 }
 
@@ -56,13 +58,19 @@ export class Runtime {
   readonly state: RuntimeState
   private readonly renderer: CanvasRenderer
   constructor(private canvas: HTMLCanvasElement, project: RuntimeProject, private onFrame?: (state: RuntimeState) => void) {
-    this.camera = new Camera(project.width, project.height); this.input.attach(canvas); this.scenes = new SceneManager(project.scenes, project.startSceneId); this.state = { score: 0, time: 0, flags: {}, ...project.state }; this.renderer = new CanvasRenderer(canvas, project.width, project.height)
+    this.camera = new Camera(project.width, project.height); this.input.attach(canvas); this.scenes = new SceneManager(project.scenes, project.startSceneId); this.state = { score: 0, time: 0, flags: {}, status: 'loading', ...project.state }; this.renderer = new CanvasRenderer(canvas, project.width, project.height)
   }
-  start() { if (this.running) return; this.running = true; this.last = performance.now(); this.frame = requestAnimationFrame(this.tick) }
+  start() { if (this.running) return; this.state.status = 'playing'; this.running = true; this.last = performance.now(); this.frame = requestAnimationFrame(this.tick) }
   stop() { this.running = false; cancelAnimationFrame(this.frame) }
-  reset() { this.state.score = 0; this.state.time = 0; this.state.flags = {} }
+  pause() { this.state.status = 'paused'; this.stop() }
+  reset() { this.state.score = 0; this.state.time = 0; this.state.flags = {}; this.state.status = 'loading'; this.start() }
+  setStatus(status: RuntimeState['status']) { this.state.status = status; if (status === 'playing') this.start(); else if (status !== 'loading') this.stop() }
   private tick = (now: number) => { if (!this.running) return; const dt = Math.min((now - this.last) / 1000, 0.05); this.last = now; this.update(dt); this.render(); this.frame = requestAnimationFrame(this.tick) }
   private update(dt: number) { this.state.time += dt; const input = this.input.snapshot(); const entities = this.scenes.current.entities
+    const cameraConfig = this.scenes.current.camera
+    const cameraTarget = entities.find((entity) => entity.id === (cameraConfig?.targetId ?? 'player'))
+    if (cameraConfig?.mode === 'fixed') this.camera.setFixed(cameraConfig.bounds ? { x: cameraConfig.bounds.x, y: cameraConfig.bounds.y } : { x: 0, y: 0 }, cameraConfig.bounds)
+    else if (cameraTarget) this.camera.follow(cameraTarget.position, cameraConfig)
     const platforms = entities.filter((entity) => entity.solid)
     for (const entity of entities) { if (entity.player) updatePlayer(entity, input, dt, platforms) }
     updateEntities(entities, input, this.state, dt)

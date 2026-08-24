@@ -5,6 +5,8 @@ export type RuntimeInput = {
   pointer: Vec2 & { down: boolean }
   touch: { left: boolean; right: boolean; jump: boolean }
 }
+export type GameStatus = 'loading' | 'playing' | 'paused' | 'game-over' | 'level-complete'
+export type CameraConfig = { mode?: 'fixed' | 'follow'; targetId?: string; smoothing?: number; bounds?: { x: number; y: number; width: number; height: number } }
 
 export type SpriteFrame = { x: number; y: number; width: number; height: number }
 export type AnimationClip = { frames: SpriteFrame[]; frameRate: number; loop?: boolean }
@@ -36,8 +38,8 @@ export type RuntimeEntity = {
   render?: (entity: RuntimeEntity, context: RenderContext) => void
 }
 
-export type RuntimeScene = { id: string; name: string; entities: RuntimeEntity[]; background?: string | { top: string; bottom: string } }
-export type RuntimeState = { score: number; time: number; flags: Record<string, boolean | number | string> }
+export type RuntimeScene = { id: string; name: string; entities: RuntimeEntity[]; background?: string | { top: string; bottom: string }; camera?: CameraConfig }
+export type RuntimeState = { score: number; time: number; flags: Record<string, boolean | number | string>; status: GameStatus }
 export type UpdateContext = { dt: number; input: RuntimeInput; state: RuntimeState }
 export type RenderContext = { ctx: CanvasRenderingContext2D; camera: { x: number; y: number; zoom: number }; assets: AssetLoader; time: number }
 export type RuntimeProject = { width: number; height: number; scenes: RuntimeScene[]; startSceneId: string; state?: Partial<RuntimeState> }
