@@ -1,17 +1,10 @@
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
-import { ArrowLeft } from 'lucide-react'
-import { getCurrentUser, getProject } from '@/lib/data/game-lab'
+import { ArrowLeft, Bot, Box, Crosshair, Layers3, Settings2, SlidersHorizontal, Volume2 } from 'lucide-react'
+import { getCurrentUser, getProject, getProfile } from '@/lib/data/game-lab'
 import { listAssets } from '@/lib/data/assets'
 import { ProjectDetail } from '@/components/projects/project-detail'
 import { AssetManager } from '@/components/projects/asset-manager'
+import { GameLabShell, WorkspacePlaceholder } from '@/components/game-lab-shell'
 
-export default async function ProjectPage({ params }: { params: Promise<{ id: string }> }) {
-  const user = await getCurrentUser(); if (!user) redirect('/auth/sign-in')
-  const { id } = await params
-  let project
-  try { project = await getProject(id) } catch { notFound() }
-  if (project.owner_id !== user.id) notFound()
-  const assets = await listAssets(id)
-  return <main className="min-h-screen px-5 py-8 md:px-10"><div className="mx-auto max-w-6xl"><Link href="/dashboard/projects" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="size-4" />All projects</Link><header className="my-8"><p className="font-mono text-xs uppercase tracking-[0.2em] text-primary">Project workspace</p><h1 className="mt-2 text-4xl font-semibold tracking-tight">{project.name}</h1><p className="mt-2 text-muted-foreground">Shape the metadata and manage the creative files that belong to this game.</p></header><ProjectDetail project={project} /><AssetManager projectId={id} initialAssets={assets} /></div></main>
-}
+export default async function ProjectPage({ params }: { params: Promise<{ id: string }> }) { const user = await getCurrentUser(); if (!user) redirect('/auth/sign-in'); const { id } = await params; let project; try { project = await getProject(id) } catch { notFound() } if (project.owner_id !== user.id) notFound(); const [assets, profile] = await Promise.all([listAssets(id), getProfile(user.id).catch(() => null)]); const name = profile?.display_name ?? user.email?.split('@')[0] ?? 'Creator'; return <GameLabShell name={name}><Link href="/dashboard/projects" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="size-4" />My Projects</Link><header className="mt-6 flex flex-wrap items-end justify-between gap-4"><div><p className="font-mono text-xs uppercase tracking-[0.2em] text-primary">Project workspace</p><h1 className="mt-2 text-3xl font-semibold tracking-tight">{project.name}</h1><p className="mt-2 text-muted-foreground">A focused home for your game foundation.</p></div><span className="rounded-full bg-secondary px-3 py-1 text-xs">{project.genre ?? 'Genre pending'}</span></header><div className="mt-8 grid gap-4 xl:grid-cols-[1fr_320px]"><div className="flex flex-col gap-4"><WorkspacePlaceholder icon={Box} title="Game preview" description="The playable preview surface is reserved for a future engine integration." className="min-h-56" /><div className="grid gap-4 md:grid-cols-2"><WorkspacePlaceholder icon={Layers3} title="Levels & entities" description="Scene structure and entity editing will be added here." /><WorkspacePlaceholder icon={SlidersHorizontal} title="Properties" description="Select an object to inspect its properties in a future release." /></div><AssetManager projectId={id} initialAssets={assets} /></div><aside className="flex flex-col gap-4"><WorkspacePlaceholder icon={Bot} title="AI assistant" description="Your creative assistant will be available in a future release." /><WorkspacePlaceholder icon={Crosshair} title="Game settings" description="Core game settings are reserved for the next editor phase." /><WorkspacePlaceholder icon={Settings2} title="Project metadata" description="Edit the project identity and status below." /><ProjectDetail project={project} /></aside></div></GameLabShell> }
