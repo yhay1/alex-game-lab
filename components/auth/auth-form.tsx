@@ -9,13 +9,13 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { authErrorMessage, signIn, signUp } from '@/lib/auth/service'
 
-export function AuthForm({ mode }: { mode: 'sign-in' | 'sign-up' }) {
+export function AuthForm({ mode, initialError }: { mode: 'sign-in' | 'sign-up'; initialError?: string }) {
   const router = useRouter()
   const isSignUp = mode === 'sign-up'
   const [displayName, setDisplayName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(initialError ?? null)
   const [notice, setNotice] = useState<string | null>(null)
   const [pending, setPending] = useState(false)
 
