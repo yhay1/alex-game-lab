@@ -6,7 +6,9 @@ export type RuntimeInput = {
   touch: { left: boolean; right: boolean; jump: boolean }
 }
 export type GameStatus = 'loading' | 'playing' | 'paused' | 'game-over' | 'level-complete'
-export type CameraConfig = { mode?: 'fixed' | 'follow'; targetId?: string; smoothing?: number; bounds?: { x: number; y: number; width: number; height: number } }
+export type CameraConfig = { mode?: 'fixed' | 'follow'; targetId?: string; smoothing?: number; bounds?: LevelBounds }
+export type LevelBounds = { x: number; y: number; width: number; height: number }
+export type SpawnPoint = { id: string; position: Vec2; tags?: string[] }
 
 export type SpriteFrame = { x: number; y: number; width: number; height: number }
 export type AnimationClip = { frames: SpriteFrame[]; frameRate: number; loop?: boolean }
@@ -38,8 +40,8 @@ export type RuntimeEntity = {
   render?: (entity: RuntimeEntity, context: RenderContext) => void
 }
 
-export type RuntimeScene = { id: string; name: string; entities: RuntimeEntity[]; background?: string | { top: string; bottom: string }; camera?: CameraConfig; completion?: { flag?: string; score?: number; nextSceneId?: string } }
-export type RuntimeState = { score: number; time: number; flags: Record<string, boolean | number | string>; status: GameStatus }
+export type RuntimeScene = { id: string; name: string; entities: RuntimeEntity[]; background?: string | { top: string; bottom: string }; camera?: CameraConfig; bounds?: LevelBounds; spawnPoints?: SpawnPoint[]; completion?: { flag?: string; score?: number; nextSceneId?: string } }
+export type RuntimeState = { score: number; time: number; flags: Record<string, boolean | number | string>; status: GameStatus; levelId?: string; levelComplete?: boolean }
 export type UpdateContext = { dt: number; input: RuntimeInput; state: RuntimeState }
 export type RenderContext = { ctx: CanvasRenderingContext2D; camera: { x: number; y: number; zoom: number }; assets: AssetLoader; time: number }
 export type RuntimeProject = { width: number; height: number; scenes: RuntimeScene[]; startSceneId: string; state?: Partial<RuntimeState> }
