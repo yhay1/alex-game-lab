@@ -8,17 +8,8 @@ export type Profile = {
   updated_at: string
 }
 
-export type GameProject = {
-  id: string
-  owner_id: string
-  name: string
-  slug: string
-  description: string | null
-  status: 'draft' | 'published' | 'archived'
-  thumbnail_url: string | null
-  created_at: string
-  updated_at: string
-}
+import type { GameProject, GameGenre, ProjectFoundation } from '@/lib/data/game-lab-types'
+export type { GameProject, GameGenre, ProjectFoundation } from '@/lib/data/game-lab-types'
 
 export type GameProjectVersion = {
   id: string
@@ -54,6 +45,45 @@ export async function listProjects() {
   const { data, error } = await supabase.from('game_projects').select('*').order('updated_at', { ascending: false })
   if (error) throw error
   return data as GameProject[]
+}
+
+const foundationDefaults: ProjectFoundation = {
+  levels: [],
+  entities: [],
+  items: [],
+  abilities: [],
+  rules: [],
+  assets: [],
+}
+
+export async function getProject(projectId: string) {
+  const supabase = await createClient()
+  const { data, error } = await supabase.from('game_projects').select('*').eq('id', projectId).single()
+  if (error) throw error
+  return data as GameProject
+}
+
+export async function createProject(input: { name: string; description?: string; genre: GameGenre }) {
+  const user = await getCurrentUser()
+  if (!user) throw new Error('Authentication required')
+  const supabase = await createClient()
+  const slug = input.name.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || `project-${Date.now()}`
+  const { data, error } = await supabase.from('game_projects').insert({ owner_id: user.id, name: input.name.trim(), slug, description: input.description?.trim() || null, genre: input.genre, foundation: foundationDefaults }).select('*').single()
+  if (error) throw error
+  return data as GameProject
+}
+
+export async function updateProject(projectId: string, input: Partial<Pick<GameProject, 'name' | 'description' | 'genre' | 'status' | 'foundation'>>) {
+  const supabase = await createClient()
+  const { data, error } = await supabase.from('game_projects').update({ ...input, updated_at: new Date().toISOString() }).eq('id', projectId).select('*').single()
+  if (error) throw error
+  return data as GameProject
+}
+
+export async function deleteProject(projectId: string) {
+  const supabase = await createClient()
+  const { error } = await supabase.from('game_projects').delete().eq('id', projectId)
+  if (error) throw error
 }
 
 export async function getProfile(userId: string) {
