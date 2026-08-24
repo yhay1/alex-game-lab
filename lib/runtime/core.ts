@@ -1,4 +1,5 @@
 import type { AssetLoader, RuntimeInput, RuntimeProject, RuntimeScene, RuntimeState, Vec2 } from './types'
+import { CanvasRenderer } from './renderer'
 
 export class Camera {
   x = 0
@@ -46,13 +47,14 @@ export class Runtime {
   readonly assets = new Assets()
   readonly scenes: SceneManager
   readonly state: RuntimeState
+  private readonly renderer: CanvasRenderer
   constructor(private canvas: HTMLCanvasElement, project: RuntimeProject, private onFrame?: (state: RuntimeState) => void) {
-    this.camera = new Camera(project.width, project.height); this.scenes = new SceneManager(project.scenes, project.startSceneId); this.state = { score: 0, time: 0, flags: {}, ...project.state }; canvas.width = project.width; canvas.height = project.height
+    this.camera = new Camera(project.width, project.height); this.scenes = new SceneManager(project.scenes, project.startSceneId); this.state = { score: 0, time: 0, flags: {}, ...project.state }; this.renderer = new CanvasRenderer(canvas, project.width, project.height)
   }
   start() { if (this.running) return; this.running = true; this.last = performance.now(); this.frame = requestAnimationFrame(this.tick) }
   stop() { this.running = false; cancelAnimationFrame(this.frame) }
   reset() { this.state.score = 0; this.state.time = 0; this.state.flags = {} }
   private tick = (now: number) => { if (!this.running) return; const dt = Math.min((now - this.last) / 1000, 0.05); this.last = now; this.update(dt); this.render(); this.frame = requestAnimationFrame(this.tick) }
   private update(dt: number) { this.state.time += dt; const input = this.input.snapshot(); for (const entity of this.scenes.current.entities) { entity.update?.(entity, { dt, input, state: this.state }); if (entity.id === 'player') { const speed = 220 * dt; if (input.keys.has('ArrowLeft') || input.keys.has('a')) entity.position.x -= speed; if (input.keys.has('ArrowRight') || input.keys.has('d')) entity.position.x += speed; if (input.keys.has('ArrowUp') || input.keys.has('w')) entity.position.y -= speed; if (input.keys.has('ArrowDown') || input.keys.has('s')) entity.position.y += speed } } this.onFrame?.(this.state) }
-  private render() { const ctx = this.canvas.getContext('2d'); if (!ctx) return; const scene = this.scenes.current; ctx.fillStyle = scene.background ?? '#101522'; ctx.fillRect(0, 0, this.canvas.width, this.canvas.height); for (const entity of scene.entities) { const point = this.camera.worldToScreen(entity.position); ctx.fillStyle = entity.color; ctx.fillRect(point.x, point.y, entity.size.x * this.camera.zoom, entity.size.y * this.camera.zoom); entity.render?.(entity, { ctx, camera: this.camera }) } }
+  private render() { const scene = this.scenes.current; this.renderer.render(scene, this.camera, this.assets, this.state.time); for (const entity of scene.entities) entity.render?.(entity, { ctx: this.canvas.getContext('2d')!, camera: this.camera, assets: this.assets, time: this.state.time }) }
 }

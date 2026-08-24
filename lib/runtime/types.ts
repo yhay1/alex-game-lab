@@ -5,20 +5,31 @@ export type RuntimeInput = {
   pointer: Vec2 & { down: boolean }
 }
 
+export type SpriteFrame = { x: number; y: number; width: number; height: number }
+export type AnimationClip = { frames: SpriteFrame[]; frameRate: number; loop?: boolean }
+export type Renderable = {
+  layer?: number
+  shape?: 'rect' | 'circle' | 'line'
+  sprite?: { src: string; frame?: SpriteFrame; animations?: Record<string, AnimationClip>; animation?: string }
+  opacity?: number
+  rotation?: number
+}
+
 export type RuntimeEntity = {
   id: string
   position: Vec2
   size: Vec2
   color: string
   solid?: boolean
+  renderable?: Renderable
   update?: (entity: RuntimeEntity, context: UpdateContext) => void
   render?: (entity: RuntimeEntity, context: RenderContext) => void
 }
 
-export type RuntimeScene = { id: string; name: string; entities: RuntimeEntity[]; background?: string }
+export type RuntimeScene = { id: string; name: string; entities: RuntimeEntity[]; background?: string | { top: string; bottom: string } }
 export type RuntimeState = { score: number; time: number; flags: Record<string, boolean | number | string> }
 export type UpdateContext = { dt: number; input: RuntimeInput; state: RuntimeState }
-export type RenderContext = { ctx: CanvasRenderingContext2D; camera: { x: number; y: number; zoom: number } }
+export type RenderContext = { ctx: CanvasRenderingContext2D; camera: { x: number; y: number; zoom: number }; assets: AssetLoader; time: number }
 export type RuntimeProject = { width: number; height: number; scenes: RuntimeScene[]; startSceneId: string; state?: Partial<RuntimeState> }
 export type AssetLoader = { loadImage(url: string): Promise<HTMLImageElement>; loadAudio(url: string): Promise<HTMLAudioElement>; clear(): void }
 export type RuntimeHooks = { onSceneChange?: (scene: RuntimeScene) => void; onFrame?: (state: RuntimeState) => void }
