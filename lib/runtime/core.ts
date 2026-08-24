@@ -60,14 +60,16 @@ export class Runtime {
   readonly camera: Camera
   readonly input = new Input()
   readonly assets = new Assets()
+  private readonly detachInput: () => void
   readonly scenes: SceneManager
   readonly state: RuntimeState
   private readonly renderer: CanvasRenderer
   constructor(private canvas: HTMLCanvasElement, project: RuntimeProject, private onFrame?: (state: RuntimeState) => void) {
-    this.camera = new Camera(project.width, project.height); this.input.attach(canvas); this.scenes = new SceneManager(project.scenes, project.startSceneId); this.state = { score: 0, time: 0, flags: {}, status: 'loading', levelId: project.startSceneId, levelComplete: false, ...project.state }; this.renderer = new CanvasRenderer(canvas, project.width, project.height)
+    this.camera = new Camera(project.width, project.height); this.detachInput = this.input.attach(canvas); this.scenes = new SceneManager(project.scenes, project.startSceneId); this.state = { score: 0, time: 0, flags: {}, status: 'loading', levelId: project.startSceneId, levelComplete: false, ...project.state }; this.renderer = new CanvasRenderer(canvas, project.width, project.height)
   }
   start() { if (this.running) return; this.state.status = 'playing'; this.running = true; this.last = performance.now(); this.frame = requestAnimationFrame(this.tick) }
   stop() { this.running = false; cancelAnimationFrame(this.frame) }
+  destroy() { this.stop(); this.detachInput(); this.assets.clear() }
   pause() { this.state.status = 'paused'; this.stop() }
   reset() { this.scenes.resetCurrent(); this.state.score = 0; this.state.time = 0; this.state.flags = {}; this.state.levelId = this.scenes.current.id; this.state.levelComplete = false; this.state.status = 'loading'; this.start() }
   setStatus(status: RuntimeState['status']) { this.state.status = status; if (status === 'playing') this.start(); else if (status !== 'loading') this.stop() }
@@ -83,10 +85,11 @@ export class Runtime {
     for (const entity of entities) { if (entity.player) updatePlayer(entity, input, dt, platforms) }
     updateEntities(entities, input, this.state, dt)
     simulatePhysics(entities, dt); applyContactDamage(entities, this.state)
+    if (bounds) for (const entity of entities) { if (entity.kind === 'obstacle') continue; entity.position.x = Math.min(Math.max(entity.position.x, bounds.x), bounds.x + bounds.width - entity.size.x); entity.position.y = Math.min(Math.max(entity.position.y, bounds.y), bounds.y + bounds.height - entity.size.y) }
     const player = entities.find((entity) => entity.kind === 'player' || Boolean(entity.player))
     if (player && (player.health ?? 1) <= 0) this.state.status = 'game-over'
     const completion = this.scenes.current.completion
-    if (completion && ((completion.score !== undefined && this.state.score >= completion.score) || (completion.flag !== undefined && this.state.flags[completion.flag] === true))) { this.state.status = 'level-complete'; if (completion.nextSceneId) { this.scenes.load(completion.nextSceneId); this.state.levelId = completion.nextSceneId } }
+    if (completion && ((completion.score !== undefined && this.state.score >= completion.score) || (completion.flag !== undefined && this.state.flags[completion.flag] === true))) { this.state.levelComplete = true; this.state.status = 'level-complete' }
     if (this.state.status !== 'playing') this.stop()
     this.onFrame?.(this.state) }
   private render() { const scene = this.scenes.current; this.renderer.render(scene, this.camera, this.assets, this.state.time); for (const entity of scene.entities) entity.render?.(entity, { ctx: this.canvas.getContext('2d')!, camera: this.camera, assets: this.assets, time: this.state.time }) }
