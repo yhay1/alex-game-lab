@@ -1,6 +1,7 @@
 import type { AssetLoader, RuntimeInput, RuntimeProject, RuntimeScene, RuntimeState, Vec2 } from './types'
 import { CanvasRenderer } from './renderer'
 import { updatePlayer } from './player'
+import { simulatePhysics } from './physics'
 
 export class Camera {
   x = 0
@@ -60,6 +61,9 @@ export class Runtime {
   stop() { this.running = false; cancelAnimationFrame(this.frame) }
   reset() { this.state.score = 0; this.state.time = 0; this.state.flags = {} }
   private tick = (now: number) => { if (!this.running) return; const dt = Math.min((now - this.last) / 1000, 0.05); this.last = now; this.update(dt); this.render(); this.frame = requestAnimationFrame(this.tick) }
-  private update(dt: number) { this.state.time += dt; const input = this.input.snapshot(); for (const entity of this.scenes.current.entities) { if (entity.player) updatePlayer(entity, input, dt); entity.update?.(entity, { dt, input, state: this.state }) } this.onFrame?.(this.state) }
+  private update(dt: number) { this.state.time += dt; const input = this.input.snapshot(); const entities = this.scenes.current.entities
+    const platforms = entities.filter((entity) => entity.solid)
+    for (const entity of entities) { if (entity.player) updatePlayer(entity, input, dt, platforms); entity.update?.(entity, { dt, input, state: this.state }) }
+    simulatePhysics(entities, dt); this.onFrame?.(this.state) }
   private render() { const scene = this.scenes.current; this.renderer.render(scene, this.camera, this.assets, this.state.time); for (const entity of scene.entities) entity.render?.(entity, { ctx: this.canvas.getContext('2d')!, camera: this.camera, assets: this.assets, time: this.state.time }) }
 }

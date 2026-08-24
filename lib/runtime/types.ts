@@ -22,7 +22,8 @@ export type RuntimeEntity = {
   size: Vec2
   color: string
   solid?: boolean
-  player?: { speed: number; jumpForce: number; gravity: number; groundY: number; controls?: { left?: string[]; right?: string[]; jump?: string[] } }
+  physics?: { velocity: Vec2; gravity: number; maxFallSpeed: number; friction: number; grounded: boolean }
+  player?: { speed: number; jumpForce: number; gravity: number; groundY?: number; controls?: { left?: string[]; right?: string[]; jump?: string[] } }
   renderable?: Renderable
   update?: (entity: RuntimeEntity, context: UpdateContext) => void
   render?: (entity: RuntimeEntity, context: RenderContext) => void
