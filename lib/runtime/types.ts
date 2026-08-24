@@ -38,7 +38,7 @@ export type RuntimeEntity = {
   render?: (entity: RuntimeEntity, context: RenderContext) => void
 }
 
-export type RuntimeScene = { id: string; name: string; entities: RuntimeEntity[]; background?: string | { top: string; bottom: string }; camera?: CameraConfig }
+export type RuntimeScene = { id: string; name: string; entities: RuntimeEntity[]; background?: string | { top: string; bottom: string }; camera?: CameraConfig; completion?: { flag?: string; score?: number; nextSceneId?: string } }
 export type RuntimeState = { score: number; time: number; flags: Record<string, boolean | number | string>; status: GameStatus }
 export type UpdateContext = { dt: number; input: RuntimeInput; state: RuntimeState }
 export type RenderContext = { ctx: CanvasRenderingContext2D; camera: { x: number; y: number; zoom: number }; assets: AssetLoader; time: number }
