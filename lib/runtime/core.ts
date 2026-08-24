@@ -17,8 +17,10 @@ export class Camera {
 
 export class SceneManager {
   current: RuntimeScene
-  constructor(private scenes: RuntimeScene[], startId: string) { this.current = scenes.find((scene) => scene.id === startId) ?? scenes[0] }
-  switchTo(id: string) { const next = this.scenes.find((scene) => scene.id === id); if (next) this.current = next }
+  private readonly initial: RuntimeScene[]
+  constructor(private scenes: RuntimeScene[], startId: string) { this.initial = structuredClone(scenes); this.current = scenes.find((scene) => scene.id === startId) ?? scenes[0] }
+  switchTo(id: string) { const next = this.scenes.find((scene) => scene.id === id); if (next) this.current = next; return this.current }
+  resetCurrent() { const index = this.scenes.findIndex((scene) => scene.id === this.current.id); if (index >= 0) this.scenes[index] = structuredClone(this.initial[index]); this.current = this.scenes[index] }
 }
 
 export class Input {
@@ -63,7 +65,7 @@ export class Runtime {
   start() { if (this.running) return; this.state.status = 'playing'; this.running = true; this.last = performance.now(); this.frame = requestAnimationFrame(this.tick) }
   stop() { this.running = false; cancelAnimationFrame(this.frame) }
   pause() { this.state.status = 'paused'; this.stop() }
-  reset() { this.state.score = 0; this.state.time = 0; this.state.flags = {}; this.state.status = 'loading'; this.start() }
+  reset() { this.scenes.resetCurrent(); this.state.score = 0; this.state.time = 0; this.state.flags = {}; this.state.status = 'loading'; this.start() }
   setStatus(status: RuntimeState['status']) { this.state.status = status; if (status === 'playing') this.start(); else if (status !== 'loading') this.stop() }
   private tick = (now: number) => { if (!this.running) return; const dt = Math.min((now - this.last) / 1000, 0.05); this.last = now; this.update(dt); this.render(); this.frame = requestAnimationFrame(this.tick) }
   private update(dt: number) { this.state.time += dt; const input = this.input.snapshot(); const entities = this.scenes.current.entities
@@ -74,6 +76,12 @@ export class Runtime {
     const platforms = entities.filter((entity) => entity.solid)
     for (const entity of entities) { if (entity.player) updatePlayer(entity, input, dt, platforms) }
     updateEntities(entities, input, this.state, dt)
-    simulatePhysics(entities, dt); applyContactDamage(entities, this.state); this.onFrame?.(this.state) }
+    simulatePhysics(entities, dt); applyContactDamage(entities, this.state)
+    const player = entities.find((entity) => entity.kind === 'player' || Boolean(entity.player))
+    if (player && (player.health ?? 1) <= 0) this.state.status = 'game-over'
+    const completion = this.scenes.current.completion
+    if (completion && ((completion.score !== undefined && this.state.score >= completion.score) || (completion.flag !== undefined && this.state.flags[completion.flag] === true))) { this.state.status = 'level-complete'; if (completion.nextSceneId) this.scenes.switchTo(completion.nextSceneId) }
+    if (this.state.status !== 'playing') this.stop()
+    this.onFrame?.(this.state) }
   private render() { const scene = this.scenes.current; this.renderer.render(scene, this.camera, this.assets, this.state.time); for (const entity of scene.entities) entity.render?.(entity, { ctx: this.canvas.getContext('2d')!, camera: this.camera, assets: this.assets, time: this.state.time }) }
 }
