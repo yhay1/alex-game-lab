@@ -2,8 +2,8 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { projects, navigation, recentActivity, platformModules, quickActions } from '@/lib/game-lab'
-import { ArrowUpRight, Bell, Blocks, ChartNoAxesCombined, ChevronDown, Clock3, FolderKanban, FolderOpen, Gamepad2, Images, LayoutDashboard, Menu, Pencil, Play, Plus, Search, Send, Settings2, Sparkles, Trophy, Users, X, type LucideIcon } from 'lucide-react'
+import { projects, navigation, recentActivity, platformModules } from '@/lib/game-lab'
+import { ArrowUpRight, Bell, Blocks, ChartNoAxesCombined, ChevronDown, Clock3, FolderKanban, Gamepad2, Images, LayoutDashboard, Menu, Pencil, Play, Plus, Search, Send, Settings2, Sparkles, Trophy, Users, X, type LucideIcon } from 'lucide-react'
 
 const icons: Record<string, LucideIcon> = { 'layout-dashboard': LayoutDashboard, 'folder-kanban': FolderKanban, blocks: Blocks, images: Images, sparkles: Sparkles, send: Send, users: Users, trophy: Trophy, 'chart-no-axes-combined': ChartNoAxesCombined, pencil: Pencil, plus: Plus, play: Play }
 

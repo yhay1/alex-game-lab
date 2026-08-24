@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import type { Json } from '@/lib/supabase/database.types'
 
 export type Profile = {
   id: string
@@ -21,17 +22,8 @@ export type GameProjectVersion = {
   created_at: string
 }
 
-export type GameAsset = {
-  id: string
-  project_id: string
-  owner_id: string
-  name: string
-  kind: 'image' | 'audio' | 'font' | 'data' | 'other'
-  storage_path: string | null
-  metadata: Record<string, unknown>
-  created_at: string
-  updated_at: string
-}
+import type { GameAsset } from '@/lib/data/asset-types'
+export type { GameAsset } from '@/lib/data/asset-types'
 
 export async function getCurrentUser() {
   const supabase = await createClient()
@@ -72,7 +64,7 @@ export async function createProject(input: { name: string; description?: string;
   if (!user) throw new Error('Authentication required')
   const supabase = await createClient()
   const slug = input.name.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || `project-${Date.now()}`
-  const { data, error } = await supabase.from('game_projects').insert({ owner_id: user.id, name: input.name.trim(), slug, description: input.description?.trim() || null, genre: input.genre, foundation: foundationDefaults }).select('*').single()
+  const { data, error } = await supabase.from('game_projects').insert({ owner_id: user.id, name: input.name.trim(), slug, description: input.description?.trim() || null, genre: input.genre, foundation: foundationDefaults as unknown as import('@/lib/supabase/database.types').Json }).select('*').single()
   if (error) throw error
   return data as GameProject
 }
@@ -81,7 +73,7 @@ export async function updateProject(projectId: string, input: Partial<Pick<GameP
   const user = await getCurrentUser()
   if (!user) throw new Error('Authentication required')
   const supabase = await createClient()
-  const { data, error } = await supabase.from('game_projects').update({ ...input, updated_at: new Date().toISOString() }).eq('id', projectId).eq('owner_id', user.id).select('*').single()
+  const { data, error } = await supabase.from('game_projects').update({ ...input, foundation: input.foundation as unknown as Json, updated_at: new Date().toISOString() }).eq('id', projectId).eq('owner_id', user.id).select('*').single()
   if (error) throw error
   return data as GameProject
 }

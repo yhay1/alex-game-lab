@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
-import { ArrowLeft, Bot, Box, Crosshair, Layers3, Settings2, SlidersHorizontal, Volume2 } from 'lucide-react'
+import { ArrowLeft, Bot, Box, Crosshair, Layers3, Settings2, SlidersHorizontal } from 'lucide-react'
 import { getCurrentUser, getProject, getProfile } from '@/lib/data/game-lab'
 import { listAssets } from '@/lib/data/assets'
 import { ProjectDetail } from '@/components/projects/project-detail'

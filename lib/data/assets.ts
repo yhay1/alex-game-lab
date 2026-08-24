@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { ASSET_BUCKET, type GameAsset, type AssetType } from '@/lib/data/asset-types'
+import { ASSET_BUCKET, MAX_ASSET_BYTES, ACCEPTED_ASSET_TYPES, type GameAsset, type AssetType } from '@/lib/data/asset-types'
 export { ASSET_BUCKET, MAX_ASSET_BYTES, ACCEPTED_ASSET_TYPES } from '@/lib/data/asset-types'
 export type { GameAsset, AssetType } from '@/lib/data/asset-types'
 
