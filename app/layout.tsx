@@ -3,9 +3,9 @@ import type { Metadata, Viewport } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'v0 App',
-  description: 'Created with v0',
-  generator: 'v0.app',
+  title: 'Alex Game Lab — Make something playable',
+  description: 'A creative workspace for building, shaping, and sharing 2D games.',
+  generator: 'Alex Game Lab',
   icons: {
     icon: [
       {
