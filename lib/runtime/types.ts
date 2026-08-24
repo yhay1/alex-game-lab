@@ -21,6 +21,13 @@ export type RuntimeEntity = {
   position: Vec2
   size: Vec2
   color: string
+  kind?: 'player' | 'enemy' | 'npc' | 'item' | 'obstacle' | 'collectible'
+  health?: number
+  speed?: number
+  damage?: number
+  behavior?: 'static' | 'chase' | 'patrol'
+  patrol?: { from: number; to: number; direction?: 1 | -1 }
+  collectible?: { value: number; once?: boolean }
   solid?: boolean
   physics?: { velocity: Vec2; gravity: number; maxFallSpeed: number; friction: number; grounded: boolean }
   player?: { speed: number; jumpForce: number; gravity: number; groundY?: number; controls?: { left?: string[]; right?: string[]; jump?: string[] } }

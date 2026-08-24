@@ -2,6 +2,7 @@ import type { AssetLoader, RuntimeInput, RuntimeProject, RuntimeScene, RuntimeSt
 import { CanvasRenderer } from './renderer'
 import { updatePlayer } from './player'
 import { simulatePhysics } from './physics'
+import { applyContactDamage, updateEntities } from './entities'
 
 export class Camera {
   x = 0
@@ -63,7 +64,8 @@ export class Runtime {
   private tick = (now: number) => { if (!this.running) return; const dt = Math.min((now - this.last) / 1000, 0.05); this.last = now; this.update(dt); this.render(); this.frame = requestAnimationFrame(this.tick) }
   private update(dt: number) { this.state.time += dt; const input = this.input.snapshot(); const entities = this.scenes.current.entities
     const platforms = entities.filter((entity) => entity.solid)
-    for (const entity of entities) { if (entity.player) updatePlayer(entity, input, dt, platforms); entity.update?.(entity, { dt, input, state: this.state }) }
-    simulatePhysics(entities, dt); this.onFrame?.(this.state) }
+    for (const entity of entities) { if (entity.player) updatePlayer(entity, input, dt, platforms) }
+    updateEntities(entities, input, this.state, dt)
+    simulatePhysics(entities, dt); applyContactDamage(entities, this.state); this.onFrame?.(this.state) }
   private render() { const scene = this.scenes.current; this.renderer.render(scene, this.camera, this.assets, this.state.time); for (const entity of scene.entities) entity.render?.(entity, { ctx: this.canvas.getContext('2d')!, camera: this.camera, assets: this.assets, time: this.state.time }) }
 }
