@@ -15,12 +15,18 @@ export const testGameFoundation: ProjectFoundation = {
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> { return typeof value === 'object' && value !== null }
+function finite(value: unknown, fallback: number) { return typeof value === 'number' && Number.isFinite(value) ? value : fallback }
+function normalizeEntity(value: Record<string, unknown>, index: number): RuntimeEntity {
+  const position = isRecord(value.position) ? value.position : {}
+  const size = isRecord(value.size) ? value.size : {}
+  return { ...value as unknown as RuntimeEntity, id: typeof value.id === 'string' && value.id.trim() ? value.id : `entity-${index + 1}`, position: { x: finite(position.x, 0), y: finite(position.y, 0) }, size: { x: Math.max(1, finite(size.x, 32)), y: Math.max(1, finite(size.y, 32)) }, color: typeof value.color === 'string' ? value.color : '#94a3b8' }
+}
 
 export function foundationToRuntime(foundation: ProjectFoundation | null | undefined): RuntimeProject {
   const rawLevels = Array.isArray(foundation?.levels) ? foundation.levels : []
   const scenes: RuntimeScene[] = rawLevels.flatMap((raw, index) => {
     if (!isRecord(raw)) return []
-    const entities = Array.isArray(raw.entities) ? raw.entities.filter(isRecord) as RuntimeEntity[] : []
+    const entities = Array.isArray(raw.entities) ? raw.entities.filter(isRecord).map(normalizeEntity) : []
     return [{ id: typeof raw.id === 'string' ? raw.id : `level-${index + 1}`, name: typeof raw.name === 'string' ? raw.name : `Level ${index + 1}`, entities, background: typeof raw.background === 'string' || isRecord(raw.background) ? raw.background as RuntimeScene['background'] : { top: '#101522', bottom: '#182b43' }, camera: isRecord(raw.camera) ? raw.camera as RuntimeScene['camera'] : { mode: 'follow', targetId: 'player', smoothing: 0.12 }, bounds: isRecord(raw.bounds) ? raw.bounds as RuntimeScene['bounds'] : { x: 0, y: 0, width: 960, height: 540 }, spawnPoints: Array.isArray(raw.spawnPoints) ? raw.spawnPoints as RuntimeScene['spawnPoints'] : [{ id: 'player-start', position: { x: 220, y: 340 }, tags: ['player'] }], completion: isRecord(raw.completion) ? raw.completion as RuntimeScene['completion'] : { score: 10 } }]
   })
   const safeScenes: RuntimeScene[] = scenes.length ? scenes : [{ id: 'main', name: 'First Run', entities: demoEntities, background: { top: '#101522', bottom: '#182b43' }, bounds: { x: 0, y: 0, width: 960, height: 540 }, spawnPoints: [{ id: 'player-start', position: { x: 220, y: 340 }, tags: ['player'] }], camera: { mode: 'follow', targetId: 'player', smoothing: 0.12 }, completion: { score: 10, nextSceneId: 'finish' } }, { id: 'finish', name: 'Finished', entities: demoEntities.map((entity) => ({ ...entity, position: { ...entity.position, x: entity.position.x + 20 } })), background: { top: '#14213d', bottom: '#254f70' }, bounds: { x: 0, y: 0, width: 960, height: 540 }, spawnPoints: [{ id: 'player-start', position: { x: 100, y: 340 }, tags: ['player'] }], camera: { mode: 'fixed', bounds: { x: 0, y: 0, width: 960, height: 540 } }, completion: { score: 999 } }]

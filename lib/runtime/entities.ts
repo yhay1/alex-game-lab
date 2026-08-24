@@ -49,8 +49,13 @@ export function applyContactDamage(entities: RuntimeEntity[], state: RuntimeStat
   if (!player) return
   for (const enemy of entities.filter((entity) => entity.kind === 'enemy' && (entity.damage ?? 0) > 0)) {
     if (overlaps(player, enemy)) {
-      player.health = Math.max(0, (player.health ?? 1) - (enemy.damage ?? 0))
-      state.flags.playerHealth = player.health
+      const cooldownKey = `damageCooldown:${enemy.id}`
+      const availableAt = typeof state.flags[cooldownKey] === 'number' ? state.flags[cooldownKey] as number : 0
+      if (state.time >= availableAt) {
+        player.health = Math.max(0, (player.health ?? 1) - (enemy.damage ?? 0))
+        state.flags.playerHealth = player.health
+        state.flags[cooldownKey] = state.time + 0.75
+      }
     }
   }
 }
