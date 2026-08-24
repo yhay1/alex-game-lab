@@ -3,6 +3,7 @@ export type Vec2 = { x: number; y: number }
 export type RuntimeInput = {
   keys: ReadonlySet<string>
   pointer: Vec2 & { down: boolean }
+  touch: { left: boolean; right: boolean; jump: boolean }
 }
 
 export type SpriteFrame = { x: number; y: number; width: number; height: number }
@@ -21,6 +22,7 @@ export type RuntimeEntity = {
   size: Vec2
   color: string
   solid?: boolean
+  player?: { speed: number; jumpForce: number; gravity: number; groundY: number; controls?: { left?: string[]; right?: string[]; jump?: string[] } }
   renderable?: Renderable
   update?: (entity: RuntimeEntity, context: UpdateContext) => void
   render?: (entity: RuntimeEntity, context: RenderContext) => void

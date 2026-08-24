@@ -1,5 +1,6 @@
 import type { AssetLoader, RuntimeInput, RuntimeProject, RuntimeScene, RuntimeState, Vec2 } from './types'
 import { CanvasRenderer } from './renderer'
+import { updatePlayer } from './player'
 
 export class Camera {
   x = 0
@@ -19,15 +20,19 @@ export class SceneManager {
 export class Input {
   keys = new Set<string>()
   pointer = { x: 0, y: 0, down: false }
+  touch = { left: false, right: false, jump: false }
   attach(canvas: HTMLCanvasElement) {
+    const touchStart = (event: Event) => { const control = (event as CustomEvent<{ control: 'left' | 'right' | 'jump' }>).detail.control; this.touch[control] = true }
+    const touchEnd = (event: Event) => { const control = (event as CustomEvent<{ control: 'left' | 'right' | 'jump' }>).detail.control; this.touch[control] = false }
+    window.addEventListener('runtime-touch-start', touchStart as EventListener); window.addEventListener('runtime-touch-end', touchEnd as EventListener)
     const keyDown = (event: KeyboardEvent) => this.keys.add(event.key)
     const keyUp = (event: KeyboardEvent) => this.keys.delete(event.key)
     const pointer = (event: PointerEvent) => { const rect = canvas.getBoundingClientRect(); this.pointer = { x: event.clientX - rect.left, y: event.clientY - rect.top, down: event.buttons > 0 } }
     window.addEventListener('keydown', keyDown); window.addEventListener('keyup', keyUp)
     canvas.addEventListener('pointermove', pointer); canvas.addEventListener('pointerdown', pointer); canvas.addEventListener('pointerup', pointer)
-    return () => { window.removeEventListener('keydown', keyDown); window.removeEventListener('keyup', keyUp); canvas.removeEventListener('pointermove', pointer); canvas.removeEventListener('pointerdown', pointer); canvas.removeEventListener('pointerup', pointer) }
+    return () => { window.removeEventListener('keydown', keyDown); window.removeEventListener('keyup', keyUp); canvas.removeEventListener('pointermove', pointer); canvas.removeEventListener('pointerdown', pointer); canvas.removeEventListener('pointerup', pointer); window.removeEventListener('runtime-touch-start', touchStart as EventListener); window.removeEventListener('runtime-touch-end', touchEnd as EventListener) }
   }
-  snapshot(): RuntimeInput { return { keys: new Set(this.keys), pointer: { ...this.pointer } } }
+  snapshot(): RuntimeInput { return { keys: new Set(this.keys), pointer: { ...this.pointer }, touch: { ...this.touch } } }
 }
 
 export class Assets implements AssetLoader {
@@ -49,12 +54,12 @@ export class Runtime {
   readonly state: RuntimeState
   private readonly renderer: CanvasRenderer
   constructor(private canvas: HTMLCanvasElement, project: RuntimeProject, private onFrame?: (state: RuntimeState) => void) {
-    this.camera = new Camera(project.width, project.height); this.scenes = new SceneManager(project.scenes, project.startSceneId); this.state = { score: 0, time: 0, flags: {}, ...project.state }; this.renderer = new CanvasRenderer(canvas, project.width, project.height)
+    this.camera = new Camera(project.width, project.height); this.input.attach(canvas); this.scenes = new SceneManager(project.scenes, project.startSceneId); this.state = { score: 0, time: 0, flags: {}, ...project.state }; this.renderer = new CanvasRenderer(canvas, project.width, project.height)
   }
   start() { if (this.running) return; this.running = true; this.last = performance.now(); this.frame = requestAnimationFrame(this.tick) }
   stop() { this.running = false; cancelAnimationFrame(this.frame) }
   reset() { this.state.score = 0; this.state.time = 0; this.state.flags = {} }
   private tick = (now: number) => { if (!this.running) return; const dt = Math.min((now - this.last) / 1000, 0.05); this.last = now; this.update(dt); this.render(); this.frame = requestAnimationFrame(this.tick) }
-  private update(dt: number) { this.state.time += dt; const input = this.input.snapshot(); for (const entity of this.scenes.current.entities) { entity.update?.(entity, { dt, input, state: this.state }); if (entity.id === 'player') { const speed = 220 * dt; if (input.keys.has('ArrowLeft') || input.keys.has('a')) entity.position.x -= speed; if (input.keys.has('ArrowRight') || input.keys.has('d')) entity.position.x += speed; if (input.keys.has('ArrowUp') || input.keys.has('w')) entity.position.y -= speed; if (input.keys.has('ArrowDown') || input.keys.has('s')) entity.position.y += speed } } this.onFrame?.(this.state) }
+  private update(dt: number) { this.state.time += dt; const input = this.input.snapshot(); for (const entity of this.scenes.current.entities) { if (entity.player) updatePlayer(entity, input, dt); entity.update?.(entity, { dt, input, state: this.state }) } this.onFrame?.(this.state) }
   private render() { const scene = this.scenes.current; this.renderer.render(scene, this.camera, this.assets, this.state.time); for (const entity of scene.entities) entity.render?.(entity, { ctx: this.canvas.getContext('2d')!, camera: this.camera, assets: this.assets, time: this.state.time }) }
 }
