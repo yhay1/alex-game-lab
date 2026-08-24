@@ -41,8 +41,10 @@ export async function getCurrentUser() {
 }
 
 export async function listProjects() {
+  const user = await getCurrentUser()
+  if (!user) throw new Error('Authentication required')
   const supabase = await createClient()
-  const { data, error } = await supabase.from('game_projects').select('*').order('updated_at', { ascending: false })
+  const { data, error } = await supabase.from('game_projects').select('*').eq('owner_id', user.id).order('updated_at', { ascending: false })
   if (error) throw error
   return data as GameProject[]
 }
@@ -57,8 +59,10 @@ const foundationDefaults: ProjectFoundation = {
 }
 
 export async function getProject(projectId: string) {
+  const user = await getCurrentUser()
+  if (!user) throw new Error('Authentication required')
   const supabase = await createClient()
-  const { data, error } = await supabase.from('game_projects').select('*').eq('id', projectId).single()
+  const { data, error } = await supabase.from('game_projects').select('*').eq('id', projectId).eq('owner_id', user.id).single()
   if (error) throw error
   return data as GameProject
 }
@@ -74,15 +78,19 @@ export async function createProject(input: { name: string; description?: string;
 }
 
 export async function updateProject(projectId: string, input: Partial<Pick<GameProject, 'name' | 'description' | 'genre' | 'status' | 'foundation'>>) {
+  const user = await getCurrentUser()
+  if (!user) throw new Error('Authentication required')
   const supabase = await createClient()
-  const { data, error } = await supabase.from('game_projects').update({ ...input, updated_at: new Date().toISOString() }).eq('id', projectId).select('*').single()
+  const { data, error } = await supabase.from('game_projects').update({ ...input, updated_at: new Date().toISOString() }).eq('id', projectId).eq('owner_id', user.id).select('*').single()
   if (error) throw error
   return data as GameProject
 }
 
 export async function deleteProject(projectId: string) {
+  const user = await getCurrentUser()
+  if (!user) throw new Error('Authentication required')
   const supabase = await createClient()
-  const { error } = await supabase.from('game_projects').delete().eq('id', projectId)
+  const { error } = await supabase.from('game_projects').delete().eq('id', projectId).eq('owner_id', user.id)
   if (error) throw error
 }
 
