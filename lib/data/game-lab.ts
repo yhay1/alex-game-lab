@@ -32,6 +32,18 @@ export async function getCurrentUser() {
   return data.user ?? null
 }
 
+export async function listPublishedGames() {
+  const supabase = await createClient()
+  const { data, error } = await supabase.from('game_projects').select('*').eq('status', 'published').order('updated_at', { ascending: false })
+  if (error) throw error
+  const projects = (data ?? []) as GameProject[]
+  const ownerIds = [...new Set(projects.map((project) => project.owner_id))]
+  const { data: profiles, error: profileError } = ownerIds.length ? await supabase.from('profiles').select('id, display_name, avatar_url').in('id', ownerIds) : { data: [], error: null }
+  if (profileError) throw profileError
+  const owners = new Map((profiles ?? []).map((profile) => [profile.id, profile]))
+  return projects.map((project) => ({ ...project, owner: owners.get(project.owner_id) ?? null, like_count: null, review_count: null, rating: null }))
+}
+
 export async function listProjects() {
   const user = await getCurrentUser()
   if (!user) throw new Error('Authentication required')
