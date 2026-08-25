@@ -7,7 +7,7 @@ import { useState } from 'react'
 import { SignOutButton } from '@/components/auth/sign-out-button'
 
 const links = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/dashboard', label: 'Discover', icon: LayoutDashboard },
   { href: '/projects', label: 'My Projects', icon: FolderKanban },
   { href: '/assets', label: 'Assets', icon: Images },
 ]
@@ -21,7 +21,7 @@ export function GameLabShell({ children, name }: { children: React.ReactNode; na
       <div className="mt-auto flex flex-col gap-2"><Link href="/settings" className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm text-muted-foreground hover:bg-sidebar-accent hover:text-foreground"><Settings className="size-4" />Account & Settings</Link><div className="border-t border-sidebar-border pt-4"><p className="truncate px-3 text-xs text-muted-foreground">{name}</p><div className="mt-2 px-1"><SignOutButton /></div></div></div>
     </aside>
     {open && <button className="fixed inset-0 z-30 bg-foreground/20 lg:hidden" onClick={() => setOpen(false)} aria-label="Close navigation overlay" />}
-    <div className="min-w-0 flex-1"><header className="flex h-16 items-center justify-between border-b border-border bg-background/90 px-5 backdrop-blur lg:hidden"><button onClick={() => setOpen(true)} aria-label="Open navigation"><Menu className="size-5" /></button><span className="text-sm font-semibold">Alex Game Lab</span><Link href="/settings" aria-label="Settings"><Settings className="size-5 text-muted-foreground" /></Link></header><div className="mx-auto max-w-[1500px] p-5 md:p-8">{children}</div></div>
+    <div className="min-w-0 flex-1"><header className="flex h-16 items-center justify-between border-b border-border bg-background/90 px-5 backdrop-blur lg:hidden"><button onClick={() => setOpen(true)} aria-label="Open navigation"><Menu className="size-5" /></button><span className="text-sm font-semibold">Alex Game Lab</span><span aria-hidden="true" className="size-5" /></header><div className="mx-auto max-w-[1500px] p-5 md:p-8">{children}</div></div>
   </div>
 }
 
