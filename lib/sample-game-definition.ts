@@ -11,7 +11,9 @@ export const sampleGameDefinition: GameDefinition = {
   scenes: [{
     id: 'main-scene', name: 'Main Scene', entities: [
       { id: 'player', name: 'Player', components: { transform: { position: { x: 160, y: 240 } }, sprite: { assetId: 'player-sprite', layer: 2 }, collider: { shape: 'rectangle', size: { x: 40, y: 44 } } } },
-      { id: 'starting-platform', name: 'Starting Platform', components: { transform: { position: { x: 120, y: 400 } }, sprite: { assetId: 'platform-sprite', layer: 1 }, collider: { shape: 'rectangle', size: { x: 256, y: 32 }, isStatic: true } } },
+      { id: 'starting-platform', name: 'Starting Platform', components: { transform: { position: { x: 120, y: 400 } }, sprite: { assetId: 'platform-sprite', layer: 1 }, collider: { shape: 'rectangle', size: { x: 720, y: 32 }, isStatic: true } } },
+      { id: 'goal-platform', name: 'Goal Platform', components: { transform: { position: { x: 680, y: 300 } }, sprite: { assetId: 'platform-sprite', layer: 1 }, collider: { shape: 'rectangle', size: { x: 180, y: 32 }, isStatic: true } } },
+      { id: 'energy-cell', name: 'Energy Cell', components: { transform: { position: { x: 740, y: 250 } }, sprite: { assetId: 'player-sprite', layer: 3 }, tags: ['collectible'], collectible: { value: 10, once: true } } },
     ],
   }],
 }

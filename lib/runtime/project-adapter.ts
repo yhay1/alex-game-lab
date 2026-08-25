@@ -5,7 +5,8 @@ const demoEntities: RuntimeEntity[] = [
   { id: 'platform', kind: 'obstacle', position: { x: 120, y: 410 }, size: { x: 720, y: 32 }, color: '#34d399', solid: true, renderable: { layer: 2, shape: 'rect' } },
   { id: 'player', kind: 'player', position: { x: 220, y: 340 }, size: { x: 42, y: 64 }, color: '#67e8f9', health: 5, player: { speed: 220, jumpForce: 420, gravity: 1100 }, renderable: { layer: 3, shape: 'rect' } },
   { id: 'enemy', kind: 'enemy', position: { x: 610, y: 346 }, size: { x: 42, y: 64 }, color: '#fb7185', health: 3, speed: 55, damage: 1, behavior: 'patrol', patrol: { from: 520, to: 760, direction: -1 }, renderable: { layer: 3, shape: 'rect' } },
-  { id: 'collectible', kind: 'collectible', position: { x: 420, y: 365 }, size: { x: 24, y: 24 }, color: '#facc15', collectible: { value: 10 }, renderable: { layer: 4, shape: 'circle' } },
+  { id: 'collectible', kind: 'collectible', position: { x: 420, y: 365 }, size: { x: 24, y: 24 }, color: '#facc15', collectible: { value: 10, once: true }, renderable: { layer: 4, shape: 'circle' } },
+  { id: 'goal', kind: 'collectible', position: { x: 740, y: 250 }, size: { x: 24, y: 24 }, color: '#a78bfa', collectible: { value: 10, once: true }, renderable: { layer: 4, shape: 'circle' } },
 ]
 
 export const testGameFoundation: ProjectFoundation = {

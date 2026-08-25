@@ -6,7 +6,7 @@ import { sampleGameDefinition } from './sample-game-definition'
 test('loads the starting scene without mutating the definition', () => {
   const runtime = new GameRuntime(sampleGameDefinition)
   assert.equal(runtime.getActiveSceneId(), 'main-scene')
-  assert.equal(runtime.getActiveScene().getEntities().length, 2)
+  assert.equal(runtime.getActiveScene().getEntities().length, 4)
   assert.deepEqual(sampleGameDefinition.scenes[0].entities[0].components.transform.position, { x: 160, y: 240 })
 })
 
