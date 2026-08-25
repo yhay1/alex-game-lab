@@ -11,10 +11,12 @@
     "test": "node --import tsx --test lib/game-definition.test.ts lib/game-runtime.test.ts lib/runtime/physics.test.ts lib/runtime/asset-registry.test.ts lib/runtime/project-definition.test.ts lib/ai-game-definition.test.ts lib/runtime/sample-game.test.ts lib/runtime/core.test.ts"
   },
   "dependencies": {
+    "@ai-sdk/react": "^4.0.81",
     "@base-ui/react": "^1.5.0",
     "@supabase/ssr": "^0.12.5",
     "@supabase/supabase-js": "^2.112.4",
     "@vercel/analytics": "1.6.1",
+    "ai": "^7.0.78",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^1.16.0",
