@@ -8,6 +8,13 @@ test('registry reports unknown assets clearly', () => {
   assert.equal(registry.getStatus('missing'), undefined)
 })
 
+test('registry memoizes terminal load state', async () => {
+  const registry = new AssetRegistry([{ id: 'font', type: 'font', path: '/font.woff2' }])
+  const first = await registry.load('font')
+  const second = await registry.load('font')
+  assert.equal(first, second)
+})
+
 test('registry rejects non-browser image loading gracefully', async () => {
   const registry = new AssetRegistry([{ id: 'font', type: 'font', path: '/font.woff2' }])
   const result = await registry.load('font')

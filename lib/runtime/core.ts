@@ -11,7 +11,7 @@ export class Camera {
   constructor(public width: number, public height: number) {}
   follow(target: Vec2, config: CameraConfig = {}) { if (config.mode === 'fixed') return; const desiredX = target.x - this.width / 2 / this.zoom; const desiredY = target.y - this.height / 2 / this.zoom; const smoothing = Math.min(Math.max(config.smoothing ?? 1, 0.01), 1); this.x += (desiredX - this.x) * smoothing; this.y += (desiredY - this.y) * smoothing; this.clamp(config.bounds) }
   setFixed(position: Vec2, bounds?: CameraConfig['bounds']) { this.x = position.x; this.y = position.y; this.clamp(bounds) }
-  private clamp(bounds?: CameraConfig['bounds']) { if (!bounds) return; this.x = Math.min(Math.max(this.x, bounds.x), Math.max(bounds.x, bounds.x + bounds.width - this.width / this.zoom)); this.y = Math.min(Math.max(this.y, bounds.y), Math.max(bounds.y, bounds.y + bounds.height - this.height / this.zoom)) }
+  private clamp(bounds?: CameraConfig['bounds']) { if (!bounds) return; const viewWidth = this.width / this.zoom; const viewHeight = this.height / this.zoom; this.x = Math.min(Math.max(this.x, bounds.x), Math.max(bounds.x, bounds.x + bounds.width - viewWidth)); this.y = Math.min(Math.max(this.y, bounds.y), Math.max(bounds.y, bounds.y + bounds.height - viewHeight)) }
   worldToScreen(point: Vec2) { return { x: (point.x - this.x) * this.zoom, y: (point.y - this.y) * this.zoom } }
 }
 
@@ -32,8 +32,8 @@ export class Input {
   pointer = { x: 0, y: 0, down: false }
   touch = { left: false, right: false, jump: false }
   attach(canvas: HTMLCanvasElement) {
-    const touchStart = (event: Event) => { const control = (event as CustomEvent<{ control: 'left' | 'right' | 'jump' }>).detail.control; this.touch[control] = true }
-    const touchEnd = (event: Event) => { const control = (event as CustomEvent<{ control: 'left' | 'right' | 'jump' }>).detail.control; this.touch[control] = false }
+    const touchStart = (event: Event) => { const control = (event as CustomEvent<{ control?: 'left' | 'right' | 'jump' }>).detail?.control; if (control) this.touch[control] = true }
+    const touchEnd = (event: Event) => { const control = (event as CustomEvent<{ control?: 'left' | 'right' | 'jump' }>).detail?.control; if (control) this.touch[control] = false }
     window.addEventListener('runtime-touch-start', touchStart as EventListener); window.addEventListener('runtime-touch-end', touchEnd as EventListener)
     const keyDown = (event: KeyboardEvent) => this.keys.add(event.key)
     const keyUp = (event: KeyboardEvent) => this.keys.delete(event.key)

@@ -17,8 +17,10 @@ export function GameCanvas({ definition }: { definition: GameDefinition }) {
     const resize = () => {
       const ratio = window.devicePixelRatio || 1
       const rect = canvas.getBoundingClientRect()
-      canvas.width = Math.max(1, Math.floor(rect.width * ratio))
-      canvas.height = Math.max(1, Math.floor(rect.height * ratio))
+      const width = Math.max(1, Math.floor(rect.width * ratio))
+      const height = Math.max(1, Math.floor(rect.height * ratio))
+      canvas.width = width
+      canvas.height = height
       renderer.render(runtime)
     }
     const loop = (time: number) => {

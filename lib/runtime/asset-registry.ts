@@ -31,44 +31,46 @@ export class AssetRegistry {
     return this.records.get(id)?.status
   }
 
-  async load(id: string): Promise<AssetRecord> {
+  private readonly pending = new Map<string, Promise<AssetRecord>>()
+
+  load(id: string): Promise<AssetRecord> {
     const record = this.records.get(id)
     if (!record) throw new Error(`Unknown asset: ${id}`)
-    if (record.status === 'loaded' || record.status === 'error') return record
-    if (record.status === 'loading') return record
+    if (record.status === 'loaded' || record.status === 'error') return Promise.resolve(record)
+    const pending = this.pending.get(id)
+    if (pending) return pending
 
     record.status = 'loading'
-    if (record.definition.type !== 'sprite' || !record.definition.path) {
-      record.status = 'error'
-      record.error = new Error(`Asset ${id} is not loadable as an image`)
-      return record
-    }
-
-    if (typeof Image === 'undefined') {
-      record.status = 'error'
-      record.error = new Error('Image loading is unavailable in this environment')
-      return record
-    }
-
-    const image = new Image()
-    image.crossOrigin = 'anonymous'
-    image.src = record.definition.path
-    record.resource = image
-
-    return new Promise((resolve) => {
-      image.onload = () => {
-        record.status = 'loaded'
-        resolve(record)
-      }
-      image.onerror = () => {
+    const promise = new Promise<AssetRecord>((resolve) => {
+      if (record.definition.type !== 'sprite' || !record.definition.path) {
         record.status = 'error'
-        record.error = new Error(`Unable to load asset: ${id}`)
+        record.error = new Error(`Asset ${id} is not loadable as an image`)
         resolve(record)
+        return
       }
+      if (typeof Image === 'undefined') {
+        record.status = 'error'
+        record.error = new Error('Image loading is unavailable in this environment')
+        resolve(record)
+        return
+      }
+      const image = new Image()
+      image.crossOrigin = 'anonymous'
+      image.onload = () => { record.status = 'loaded'; resolve(record) }
+      image.onerror = () => { record.status = 'error'; record.error = new Error(`Unable to load asset: ${id}`); resolve(record) }
+      record.resource = image
+      image.src = record.definition.path
     })
+    this.pending.set(id, promise)
+    return promise
   }
 
   async loadAll(): Promise<AssetRecord[]> {
     return Promise.all([...this.records.keys()].map((id) => this.load(id)))
+  }
+
+  clear(): void {
+    this.pending.clear()
+    this.records.clear()
   }
 }
