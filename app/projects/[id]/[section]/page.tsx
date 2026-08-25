@@ -3,6 +3,7 @@ import { WorkspacePlaceholder } from '@/components/game-lab-shell'
 import { ProjectAiChat } from '@/components/projects/project-ai-chat'
 import { getProject } from '@/lib/data/game-lab'
 import { ProjectWorkspaceEditor } from '@/components/projects/project-workspace-editor'
+import { ProjectCustomizeEditor } from '@/components/projects/project-customize-editor'
 import { createClient } from '@/lib/supabase/server'
 import { listUserAssetReferences } from '@/lib/data/asset-references-server'
 
@@ -24,5 +25,6 @@ export default async function ProjectSection({ params }: { params: Promise<{ id:
   const project = await getProject(id)
   if (section === 'ai') { const supabase = await createClient(); const { data: { user } } = await supabase.auth.getUser(); const assets = user ? await listUserAssetReferences(user.id) : []; return <ProjectAiChat projectId={id} projectName={project.name} assets={assets} /> }
   if (section === 'workspace') return <ProjectWorkspaceEditor project={project} />
+  if (section === 'customize') return <ProjectCustomizeEditor project={project} />
   return <div><p className="font-mono text-xs uppercase tracking-[0.2em] text-primary">Project section</p><h2 className="mt-2 text-3xl font-semibold tracking-tight">{content.title}</h2><p className="mt-2 max-w-xl text-muted-foreground">{content.description}</p><div className="mt-8 max-w-2xl"><WorkspacePlaceholder icon={content.icon} title="Foundation ready" description="This section is connected to the project shell and ready for its focused V0.4 editor surface." className="min-h-40" /></div></div>
 }
