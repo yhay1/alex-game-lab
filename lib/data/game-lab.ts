@@ -78,16 +78,16 @@ export async function createProject(input: { name: string; description?: string;
   if (!user) throw new Error('Authentication required')
   const supabase = await createClient()
   const slug = input.name.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || `project-${Date.now()}`
-  const { data, error } = await supabase.from('game_projects').insert({ owner_id: user.id, name: input.name.trim(), slug, description: input.description?.trim() || null, genre: input.genre, foundation: foundationDefaults as unknown as import('@/lib/supabase/database.types').Json }).select('*').single()
+  const { data, error } = await supabase.from('game_projects').insert({ owner_id: user.id, name: input.name.trim(), slug, description: input.description?.trim() || null, genre: input.genre, foundation: foundationDefaults as unknown as import('@/lib/supabase/database.types').Json, metadata: { cover_generation: { status: 'coming_soon', prompt: null } } as unknown as Json }).select('*').single()
   if (error) throw error
   return data as GameProject
 }
 
-export async function updateProject(projectId: string, input: Partial<Pick<GameProject, 'name' | 'description' | 'genre' | 'status' | 'foundation'>>) {
+export async function updateProject(projectId: string, input: Partial<Pick<GameProject, 'name' | 'description' | 'genre' | 'status' | 'foundation' | 'cover_image_url' | 'metadata'>>) {
   const user = await getCurrentUser()
   if (!user) throw new Error('Authentication required')
   const supabase = await createClient()
-  const { data, error } = await supabase.from('game_projects').update({ ...input, foundation: input.foundation as unknown as Json, updated_at: new Date().toISOString() }).eq('id', projectId).eq('owner_id', user.id).select('*').single()
+  const { data, error } = await supabase.from('game_projects').update({ ...input, foundation: input.foundation as unknown as Json, metadata: input.metadata as unknown as Json, updated_at: new Date().toISOString() }).eq('id', projectId).eq('owner_id', user.id).select('*').single()
   if (error) throw error
   return data as GameProject
 }

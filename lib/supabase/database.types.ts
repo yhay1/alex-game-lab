@@ -10,9 +10,9 @@ export type Database = {
         Relationships: []
       }
       game_projects: {
-        Row: { id: string; owner_id: string; name: string; slug: string; description: string | null; genre: string | null; foundation: Json; status: 'draft' | 'published' | 'archived'; thumbnail_url: string | null; created_at: string; updated_at: string }
-        Insert: { id?: string; owner_id: string; name: string; slug: string; description?: string | null; genre?: string | null; foundation?: Json; status?: 'draft' | 'published' | 'archived'; thumbnail_url?: string | null; created_at?: string; updated_at?: string }
-        Update: { id?: string; owner_id?: string; name?: string; slug?: string; description?: string | null; genre?: string | null; foundation?: Json; status?: 'draft' | 'published' | 'archived'; thumbnail_url?: string | null; created_at?: string; updated_at?: string }
+        Row: { id: string; owner_id: string; name: string; slug: string; description: string | null; genre: string | null; foundation: Json; status: 'draft' | 'published' | 'archived'; thumbnail_url: string | null; cover_image_url: string | null; metadata: Json; created_at: string; updated_at: string }
+        Insert: { id?: string; owner_id: string; name: string; slug: string; description?: string | null; genre?: string | null; foundation?: Json; status?: 'draft' | 'published' | 'archived'; thumbnail_url?: string | null; cover_image_url?: string | null; metadata?: Json; created_at?: string; updated_at?: string }
+        Update: { id?: string; owner_id?: string; name?: string; slug?: string; description?: string | null; genre?: string | null; foundation?: Json; status?: 'draft' | 'published' | 'archived'; thumbnail_url?: string | null; cover_image_url?: string | null; metadata?: Json; created_at?: string; updated_at?: string }
         Relationships: []
       }
       game_project_versions: {
