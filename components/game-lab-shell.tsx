@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Gamepad2, LayoutDashboard, FolderKanban, Plus, Settings, Menu, X, Images } from 'lucide-react'
+import { Gamepad2, LayoutDashboard, FolderKanban, Plus, Settings, Menu, X, Images, Box, Crosshair, Settings2, Layers3, SlidersHorizontal, UserRound, Bell, ShieldCheck, Sparkles } from 'lucide-react'
 import { useState } from 'react'
 import { SignOutButton } from '@/components/auth/sign-out-button'
 
@@ -26,4 +26,6 @@ export function GameLabShell({ children, name }: { children: React.ReactNode; na
   </div>
 }
 
-export function WorkspacePlaceholder({ icon: Icon, title, description, className = '' }: { icon: React.ElementType; title: string; description: string; className?: string }) { return <section className={`rounded-2xl border border-border bg-card p-5 ${className}`}><div className="flex items-start gap-3"><span className="flex size-9 items-center justify-center rounded-lg bg-secondary text-primary"><Icon className="size-4" /></span><div><h2 className="font-semibold">{title}</h2><p className="mt-1 text-sm leading-6 text-muted-foreground">{description}</p></div></div></section> }
+const placeholderIcons = { box: Box, layers: Layers3, sliders: SlidersHorizontal, user: UserRound, bell: Bell, shield: ShieldCheck, settings: Settings, sparkles: Sparkles, crosshair: Crosshair, controls: Settings2 }
+
+export function WorkspacePlaceholder({ icon, title, description, className = '' }: { icon: keyof typeof placeholderIcons; title: string; description: string; className?: string }) { const Icon = placeholderIcons[icon] ?? Box; return <section className={`rounded-2xl border border-border bg-card p-5 ${className}`}><div className="flex items-start gap-3"><span className="flex size-9 items-center justify-center rounded-lg bg-secondary text-primary"><Icon className="size-4" /></span><div><h2 className="font-semibold">{title}</h2><p className="mt-1 text-sm leading-6 text-muted-foreground">{description}</p></div></div></section> }
