@@ -3,7 +3,6 @@ import { WorkspacePlaceholder } from '@/components/game-lab-shell'
 import { ProjectAiChat } from '@/components/projects/project-ai-chat'
 import { getProject } from '@/lib/data/game-lab'
 import { ProjectWorkspaceEditor } from '@/components/projects/project-workspace-editor'
-import { projectSections } from '@/components/projects/project-workspace-shell'
 import { createClient } from '@/lib/supabase/server'
 import { listUserAssetReferences } from '@/lib/data/asset-references-server'
 
@@ -21,7 +20,7 @@ const descriptions: Record<string, { title: string; description: string; icon: '
 export default async function ProjectSection({ params }: { params: Promise<{ id: string; section: string }> }) {
   const { id, section } = await params
   const content = descriptions[section]
-  if (!content || !projectSections.some((item) => item.slug === section)) notFound()
+  if (!content || !Object.prototype.hasOwnProperty.call(descriptions, section)) notFound()
   const project = await getProject(id)
   if (section === 'ai') { const supabase = await createClient(); const { data: { user } } = await supabase.auth.getUser(); const assets = user ? await listUserAssetReferences(user.id) : []; return <ProjectAiChat projectId={id} projectName={project.name} assets={assets} /> }
   if (section === 'workspace') return <ProjectWorkspaceEditor project={project} />
