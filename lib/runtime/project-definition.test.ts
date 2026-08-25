@@ -11,3 +11,9 @@ test('project definition loader accepts a canonical definition', () => {
 test('project definition loader rejects malformed foundation', () => {
   assert.throws(() => projectToGameDefinition({ foundation: { scenes: [] } } as never), /Invalid game definition/)
 })
+
+test('project definition loader falls back for editable foundations', () => {
+  const definition = projectToGameDefinition({ id: 'project-1', name: 'Untitled', foundation: { prompt: 'A platformer' } } as never)
+  assert.equal(definition.schemaVersion, '0.1')
+  assert.equal(definition.scenes.length, 1)
+})

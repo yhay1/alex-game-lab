@@ -11,7 +11,7 @@ export function projectToGameDefinition(project: GameProject): GameDefinition {
   // Newly-created projects store the editable foundation shape first. Keep the
   // workspace usable until the first valid game definition is generated.
   const hasLegacyFoundation = ['levels', 'entities', 'items', 'abilities', 'rules'].some((key) => key in foundation)
-  const hasExplicitDefinition = 'gameDefinition' in foundation || (!hasLegacyFoundation && ['schemaVersion', 'metadata', 'settings', 'assets', 'scenes'].some((key) => key in foundation))
+  const hasExplicitDefinition = 'gameDefinition' in foundation || (!hasLegacyFoundation && ('schemaVersion' in foundation || Array.isArray(foundation.scenes)))
   if (hasExplicitDefinition) throw new Error(`Invalid game definition: ${result.errors.join('; ')}`)
 
   return {
