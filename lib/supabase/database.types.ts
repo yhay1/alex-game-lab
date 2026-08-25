@@ -22,9 +22,21 @@ export type Database = {
         Relationships: []
       }
       game_assets: {
-        Row: { id: string; project_id: string; owner_id: string; name: string; description: string | null; asset_type: 'image' | 'sprite' | 'audio'; storage_path: string; mime_type: string; size_bytes: number; width: number | null; height: number | null; duration_seconds: number | null; created_at: string; updated_at: string }
-        Insert: { id?: string; project_id: string; owner_id: string; name: string; description?: string | null; asset_type: 'image' | 'sprite' | 'audio'; storage_path: string; mime_type: string; size_bytes: number; width?: number | null; height?: number | null; duration_seconds?: number | null; created_at?: string; updated_at?: string }
-        Update: { id?: string; project_id?: string; owner_id?: string; name?: string; description?: string | null; asset_type?: 'image' | 'sprite' | 'audio'; storage_path?: string; mime_type?: string; size_bytes?: number; width?: number | null; height?: number | null; duration_seconds?: number | null; created_at?: string; updated_at?: string }
+        Row: { id: string; project_id: string; owner_id: string; name: string; description: string | null; asset_type: 'image' | 'sprite' | 'audio'; kind: string; storage_path: string; mime_type: string; size_bytes: number; width: number | null; height: number | null; duration_seconds: number | null; visibility: 'public' | 'private'; source_type: 'upload' | 'generated' | 'imported'; source_url: string | null; license: string | null; tags: string[]; classification_status: 'unclassified' | 'pending' | 'classified'; metadata: Json; created_at: string; updated_at: string }
+        Insert: { id?: string; project_id: string; owner_id: string; name: string; description?: string | null; asset_type: 'image' | 'sprite' | 'audio'; kind?: string; storage_path: string; mime_type: string; size_bytes: number; width?: number | null; height?: number | null; duration_seconds?: number | null; visibility?: 'public' | 'private'; source_type?: 'upload' | 'generated' | 'imported'; source_url?: string | null; license?: string | null; tags?: string[]; classification_status?: 'unclassified' | 'pending' | 'classified'; metadata?: Json; created_at?: string; updated_at?: string }
+        Update: { id?: string; project_id?: string; owner_id?: string; name?: string; description?: string | null; asset_type?: 'image' | 'sprite' | 'audio'; kind?: string; storage_path?: string; mime_type?: string; size_bytes?: number; width?: number | null; height?: number | null; duration_seconds?: number | null; visibility?: 'public' | 'private'; source_type?: 'upload' | 'generated' | 'imported'; source_url?: string | null; license?: string | null; tags?: string[]; classification_status?: 'unclassified' | 'pending' | 'classified'; metadata?: Json; created_at?: string; updated_at?: string }
+        Relationships: []
+      }
+      game_asset_favorites: {
+        Row: { asset_id: string; user_id: string; created_at: string }
+        Insert: { asset_id: string; user_id: string; created_at?: string }
+        Update: { asset_id?: string; user_id?: string; created_at?: string }
+        Relationships: []
+      }
+      game_asset_reports: {
+        Row: { id: string; asset_id: string; reporter_id: string; reason: string; created_at: string }
+        Insert: { id?: string; asset_id: string; reporter_id: string; reason: string; created_at?: string }
+        Update: { id?: string; asset_id?: string; reporter_id?: string; reason?: string; created_at?: string }
         Relationships: []
       }
     }
