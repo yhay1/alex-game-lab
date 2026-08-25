@@ -44,11 +44,13 @@ export async function listPublishedGames() {
   return projects.map((project) => ({ ...project, owner: owners.get(project.owner_id) ?? null, like_count: null, review_count: null, rating: null }))
 }
 
-export async function listProjects() {
+export async function listProjects(limit?: number) {
   const user = await getCurrentUser()
   if (!user) throw new Error('Authentication required')
   const supabase = await createClient()
-  const { data, error } = await supabase.from('game_projects').select('*').eq('owner_id', user.id).order('updated_at', { ascending: false })
+  let query = supabase.from('game_projects').select('*').eq('owner_id', user.id).order('updated_at', { ascending: false })
+  if (limit) query = query.limit(limit)
+  const { data, error } = await query
   if (error) throw error
   return data as GameProject[]
 }
