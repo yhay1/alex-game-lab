@@ -24,7 +24,7 @@ export function ProjectForm() {
     try {
       const project = await createProject({ name: trimmedName, genre, description: description.trim() })
       setCreated(true)
-      router.push(`/dashboard/projects/${project.id}`)
+      router.push(`/projects/${project.id}`)
       router.refresh()
     } catch {
       setError('Could not create the project. Check your connection and try again.')

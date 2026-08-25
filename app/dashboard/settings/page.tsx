@@ -1,8 +1,6 @@
 import { redirect } from 'next/navigation'
-import { UserRound, Bell, ShieldCheck } from 'lucide-react'
 import { getCurrentUser, getProfile } from '@/lib/data/game-lab'
 import { GameLabShell, WorkspacePlaceholder } from '@/components/game-lab-shell'
 import { SignOutButton } from '@/components/auth/sign-out-button'
 
 export default async function SettingsPage() { const user = await getCurrentUser(); if (!user) redirect('/auth/sign-in'); const profile = await getProfile(user.id).catch(() => null); const name = profile?.display_name ?? user.email?.split('@')[0] ?? 'Creator'; return <GameLabShell name={name}><div className="max-w-4xl"><p className="font-mono text-xs uppercase tracking-[0.2em] text-primary">Account</p><h1 className="mt-2 text-3xl font-semibold tracking-tight">Account & settings</h1><p className="mt-2 text-muted-foreground">Manage your Game Lab identity and workspace preferences.</p><div className="mt-6"><SignOutButton /></div><div className="mt-8 grid gap-4 md:grid-cols-2"><WorkspacePlaceholder icon="user" title="Profile" description={`${name} · ${user.email}`} /><WorkspacePlaceholder icon="shield" title="Security" description="Your account is protected by Supabase authentication." /><WorkspacePlaceholder icon="bell" title="Notifications" description="Notification preferences will be available here soon." /><WorkspacePlaceholder icon="settings" title="Workspace defaults" description="Future editor and project defaults will live here." /></div></div></GameLabShell> }
-function SettingsIcon() { return <span className="text-sm">•••</span> }
