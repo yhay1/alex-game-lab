@@ -3,6 +3,8 @@ import { getProject, updateProject } from '@/lib/data/game-lab'
 import { validateAiGameDefinition } from '@/lib/ai-game-definition'
 import { createClient } from '@/lib/supabase/server'
 import { resolveUserAssetReferences } from '@/lib/data/asset-references-server'
+import { detectAssetIntent, chooseAssetPolicy } from '@/lib/data/asset-intelligence'
+import { discoverAssetCandidates } from '@/lib/data/asset-intelligence-server'
 
 export const runtime = 'nodejs'
 
@@ -18,10 +20,14 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const messages = Array.isArray(body.messages) ? body.messages.slice(-12) : []
   const assetIds = Array.isArray(body.assetReferences) ? body.assetReferences.map((reference) => reference.id).filter((id): id is string => typeof id === 'string').slice(0, 12) : []
   const assetReferences = await resolveUserAssetReferences(user.id, assetIds)
+  const latestPrompt = messages.at(-1)?.content ?? ''
+  const intent = detectAssetIntent(latestPrompt)
+  const candidates = await discoverAssetCandidates(user.id, latestPrompt, id)
+  const policy = chooseAssetPolicy(intent, candidates)
   const prompt = messages.map((message) => `${message.role}: ${message.content}`).join('\n')
   const result = streamText({
     model: MODEL,
-    system: `You are Game Lab AI for the private project ${project.name}. Help with game design and explain concrete next steps. The project currently uses ${project.genre}. You may suggest changes, but never claim a mutation happened unless the app performs it. Keep responses concise and actionable.\nProject foundation summary: ${JSON.stringify(project.foundation).slice(0, 12000)}\nAuthoritative asset references: ${JSON.stringify(assetReferences).slice(0, 6000)}`,
+    system: `You are Game Lab AI for the private project ${project.name}. Help with game design and explain concrete next steps. The project currently uses ${project.genre}. You may suggest changes, but never claim a mutation happened unless the app performs it. Keep responses concise and actionable.\nProject foundation summary: ${JSON.stringify(project.foundation).slice(0, 12000)}\nAuthoritative asset references: ${JSON.stringify(assetReferences).slice(0, 6000)}\nAsset decision policy: ${JSON.stringify({ intent, policy, candidates: candidates.slice(0, 5) }).slice(0, 6000)}`,
     prompt,
     temperature: 0.4,
     onFinish: async ({ text }) => {
