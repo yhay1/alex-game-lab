@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Gamepad2, LayoutDashboard, FolderKanban, Plus, Settings, Menu, X, Images, Box, Crosshair, Settings2, Layers3, SlidersHorizontal, UserRound, Bell, ShieldCheck, Sparkles } from 'lucide-react'
+import { Gamepad2, LayoutDashboard, FolderKanban, Settings, Menu, X, Images, Box, Crosshair, Settings2, Layers3, SlidersHorizontal, UserRound, Bell, ShieldCheck, Sparkles } from 'lucide-react'
 import { useState } from 'react'
 import { SignOutButton } from '@/components/auth/sign-out-button'
 
@@ -10,7 +10,6 @@ const links = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/projects', label: 'My Projects', icon: FolderKanban },
   { href: '/assets', label: 'Assets', icon: Images },
-  { href: '/create', label: 'Create Game', icon: Plus },
 ]
 
 export function GameLabShell({ children, name }: { children: React.ReactNode; name: string }) {
