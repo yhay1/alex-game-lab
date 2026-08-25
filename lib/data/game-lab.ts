@@ -73,6 +73,13 @@ export async function getProject(projectId: string) {
   return data as GameProject
 }
 
+export async function getPublishedProject(projectId: string) {
+  const supabase = await createClient()
+  const { data, error } = await supabase.from('game_projects').select('*').eq('id', projectId).eq('status', 'published').single()
+  if (error) throw error
+  return data as GameProject
+}
+
 export async function createProject(input: { name: string; description?: string; genre: GameGenre }) {
   const user = await getCurrentUser()
   if (!user) throw new Error('Authentication required')
@@ -96,6 +103,14 @@ export async function deleteProject(projectId: string) {
   const user = await getCurrentUser()
   if (!user) throw new Error('Authentication required')
   const supabase = await createClient()
+  const project = await getProject(projectId)
+  const assets = await listProjectAssets(projectId)
+  const paths = assets.map((asset) => asset.storage_path).filter(Boolean)
+  if (project.cover_image_url) paths.push(project.cover_image_url)
+  if (paths.length) {
+    const { error: storageError } = await supabase.storage.from('game-assets').remove(paths)
+    if (storageError) throw storageError
+  }
   const { error } = await supabase.from('game_projects').delete().eq('id', projectId).eq('owner_id', user.id)
   if (error) throw error
 }
@@ -112,6 +127,13 @@ export async function listProjectVersions(projectId: string) {
   const { data, error } = await supabase.from('game_project_versions').select('*').eq('project_id', projectId).order('version_number', { ascending: false })
   if (error) throw error
   return data as GameProjectVersion[]
+}
+
+export async function getProjectVersion(projectId: string, versionId: string) {
+  const supabase = await createClient()
+  const { data, error } = await supabase.from('game_project_versions').select('*').eq('project_id', projectId).eq('id', versionId).single()
+  if (error) throw error
+  return data as GameProjectVersion
 }
 
 export async function listProjectAssets(projectId: string) {

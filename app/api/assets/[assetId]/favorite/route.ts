@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 export async function POST(request: Request, { params }: { params: Promise<{ assetId: string }> }) {
   const { assetId } = await params
   const { favorite } = await request.json().catch(() => ({ favorite: false }))
+  if (typeof favorite !== 'boolean') return NextResponse.json({ error: 'Favorite must be boolean' }, { status: 400 })
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

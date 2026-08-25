@@ -17,7 +17,7 @@ function initials(name: string) {
 
 export function GameCard({ game }: { game: DiscoveryGame }) {
   const ownerName = game.owner?.display_name || 'Game Lab creator'
-  return <Link href={`/projects/${game.id}`} className="group overflow-hidden rounded-3xl border border-border bg-card transition-colors hover:border-primary/60">
+  return <Link href={`/play/${game.id}`} className="group overflow-hidden rounded-3xl border border-border bg-card transition-colors hover:border-primary/60">
     <div className="relative aspect-[16/9] overflow-hidden bg-secondary">
       {game.thumbnail_url ? <img src={game.thumbnail_url} alt={`${game.name} cover`} className="size-full object-cover transition-transform duration-300 group-hover:scale-[1.03]" /> : <div className="flex size-full items-center justify-center px-6 text-center"><span className="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">Cover art not uploaded</span></div>}
       <span className="absolute left-4 top-4 rounded-full border border-border/70 bg-background/85 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-foreground backdrop-blur">{game.genre || 'Uncategorized'}</span>

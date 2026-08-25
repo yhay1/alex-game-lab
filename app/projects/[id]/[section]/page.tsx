@@ -9,6 +9,9 @@ import { createClient } from '@/lib/supabase/server'
 import { listUserAssetReferences } from '@/lib/data/asset-references-server'
 import { ProjectVersionsPanel } from '@/components/projects/project-versions-panel'
 import { listProjectVersions } from '@/lib/data/game-lab'
+import { ProjectSettings } from '@/components/projects/project-settings'
+import { AssetManager } from '@/components/projects/asset-manager'
+import { listAssets } from '@/lib/data/assets'
 
 const descriptions: Record<string, { title: string; description: string; icon: 'sparkles' | 'box' | 'layers' | 'sliders' | 'settings' | 'crosshair' | 'controls' }> = {
   ai: { title: 'AI creation', description: 'Turn a clear game idea into a validated foundation. The generation surface will live here.', icon: 'sparkles' },
@@ -30,6 +33,8 @@ export default async function ProjectSection({ params }: { params: Promise<{ id:
   if (section === 'workspace') return <ProjectWorkspaceEditor project={project} />
   if (section === 'customize') return <ProjectCustomizeEditor project={project} />
   if (section === 'scenes') return <ProjectScenesEditor project={project} />
+  if (section === 'assets') return <AssetManager projectId={id} initialAssets={await listAssets(id)} />
+  if (section === 'settings') return <ProjectSettings project={project} />
   if (section === 'versions') return <ProjectVersionsPanel project={project} versions={await listProjectVersions(id)} />
   if (section === 'publish') return <ProjectVersionsPanel project={project} versions={await listProjectVersions(id)} />
   return <div><p className="font-mono text-xs uppercase tracking-[0.2em] text-primary">Project section</p><h2 className="mt-2 text-3xl font-semibold tracking-tight">{content.title}</h2><p className="mt-2 max-w-xl text-muted-foreground">{content.description}</p><div className="mt-8 max-w-2xl"><WorkspacePlaceholder icon={content.icon} title="Foundation ready" description="This section is connected to the project shell and ready for its focused V0.4 editor surface." className="min-h-40" /></div></div>

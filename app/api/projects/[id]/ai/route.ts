@@ -12,10 +12,10 @@ const MODEL = 'openai/gpt-5-mini'
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const project = await getProject(id)
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return new Response('Unauthorized', { status: 401 })
+  const project = await getProject(id)
   const body = await request.json() as { messages?: Array<{ role: string; content: string }>; assetReferences?: Array<{ id?: string }> }
   const messages = Array.isArray(body.messages) ? body.messages.slice(-12) : []
   const assetIds = Array.isArray(body.assetReferences) ? body.assetReferences.map((reference) => reference.id).filter((id): id is string => typeof id === 'string').slice(0, 12) : []

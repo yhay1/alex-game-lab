@@ -5,6 +5,7 @@ import { nextVersionNumber, validateVersionData, versionLabel } from '@/lib/runt
 
 export async function GET(_: Request, { params }: { params: Promise<unknown> }) {
   const { id } = await params as { id: string }
+  await getProject(id)
   return NextResponse.json({ versions: await listProjectVersions(id) })
 }
 
@@ -20,7 +21,12 @@ export async function POST(request: Request, { params }: { params: Promise<unkno
     const { createClient } = await import('@/lib/supabase/server'); const supabase = await createClient()
     const { data, error } = await supabase.from('game_project_versions').insert({ project_id: id, version_number: nextVersionNumber(versions), label: body.label || versionLabel(nextVersionNumber(versions)), data: definition as never, created_by: project.owner_id }).select('*').single()
     if (error) throw error
-    await updateProject(id, { status: 'published', metadata: { ...(project.metadata ?? {}), published_version_id: data.id, published_at: new Date().toISOString() } as never })
+    try {
+      await updateProject(id, { status: 'published', metadata: { ...(project.metadata ?? {}), published_version_id: data.id, published_at: new Date().toISOString() } as never })
+    } catch (updateError) {
+      await supabase.from('game_project_versions').delete().eq('id', data.id)
+      throw updateError
+    }
     return NextResponse.json({ version: data })
   }
   if (body.action === 'restore' && body.versionId) {

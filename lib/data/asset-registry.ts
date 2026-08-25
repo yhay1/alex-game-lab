@@ -22,6 +22,11 @@ export async function listRegistryAssets(filters?: { query?: string; kind?: stri
   let query = supabase.from('game_assets').select('*').order('created_at', { ascending: false }).limit(100)
   if (filters?.kind && filters.kind !== 'all') query = query.eq('kind', filters.kind)
   if (filters?.publicOnly) query = query.eq('visibility', 'public')
+  else {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error('Authentication required')
+    query = query.eq('owner_id', user.id)
+  }
   if (filters?.query) query = query.ilike('name', `%${filters.query}%`)
   const { data, error } = await query
   if (error) throw error
